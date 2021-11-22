@@ -1,0 +1,9 @@
+version: '3.3'
+services:
+   holiday:
+       image: python:3.6
+       build: .
+       tty: true
+       command: python ./server/manage.py runserver localhost:8000
+       ports:
+           - '8000:8000'
