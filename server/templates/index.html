@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Интернет вещей</title>
+    <script>
+        window.onload = () => {
+            setInterval(() => {
+                let file = "/frame?" + new Date().getTime()
+                document.getElementById("frame").src = file
+            }, 500)
+        }
+    </script>
+</head>
+<body>
+    <p>Работа студента группы РИС-19-1б
+    <p>Эльдара Миннахметова
+    <p>Python Django
+    <p><img id="frame" src="/frame" width=640 height=480 />
+</body>
+</html>
