@@ -21,10 +21,10 @@
 
     {% if login == '' %}
 
-        {% if attempts and attempt_name %}
-            <p>Осталось попыток для логина {{ attempt_name }}: {{ attempts }}</p>
-        {% elif attempt_name %}
-            <p>Секунд до следующей попытки для логина {{ attempt_name }}: {{ left }}</p>
+        {% if attempt_count and attempt_login %}
+            <p>Осталось попыток для логина {{ attempt_login }}: {{ attempt_count }}</p>
+        {% elif attempt_login %}
+            <p>Секунд до следующей попытки для логина {{ attempt_login }}: {{ seconds_for_next }}</p>
         {% endif %}
 
         <form action="/sign_in" method="POST">
