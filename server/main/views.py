@@ -8,45 +8,66 @@ from django.http import HttpResponse, HttpResponseRedirect
 # Pages
 
 def index(request):
-    return render(request, "index.html")
+    if request.method == 'GET':
+        login = request.session.get('login', '')
+        attempt_login = request.GET.get('login', '')
+        attempts, left = attempts_left(attempt_login)
+        data = {
+            'response': request.GET.get('response', ''),
+            'attempt_name': attempt_login,
+            'attempts': attempts,
+            'login': login,
+            'left': left,
+        }
+        return render(request, "index.html", data)
+    return HttpResponseRedirect("/")
 
 
 def frame(request):
-    return HttpResponse(content_type="image/jpeg", content=get_frame())
+    if request.method == 'GET':
+        return HttpResponse(content_type="image/jpeg", content=get_frame())
+    return HttpResponseRedirect("/")
 
 
-def login(request):
-    name = request.GET.get("login", "")
-    password = request.GET.get("password", "")
-    if name != "" and password != "":
-        count, seconds = attempts_left(name)
-        if count:
+def sign_in(request):
+    if request.method == 'POST':
+        login = request.POST.get("login", "")
+        password = request.POST.get("password", "")
+        if login != "" and password != "":
+            count, seconds = attempts_left(login)
+            if count == 0:
+                return HttpResponseRedirect("/?login=%s" % login)
             users = list(User.objects.filter(
-                login=name,
+                login=login,
                 password=password
             ))
             if len(users) == 0:
                 attempt = Attempt.objects.create(
-                    login=request.GET.get("login", ""),
+                    login=login,
                     dateTime=datetime.now(timezone.utc)
                 )
                 attempt.save()
-                return HttpResponseRedirect("/?response=left&attempts=%d" % (count - 1))
-            return HttpResponseRedirect("/?response=ok")
-        return HttpResponseRedirect("/?response=locked&left=%d" % seconds)
+                return HttpResponseRedirect("/?login=%s" % login)
+            request.session['login'] = login
     return HttpResponseRedirect("/")
 
 
-def logout(request):
-    name = request.GET.get("login", "")
-    password = request.GET.get("password", "")
-    if name != "" and password != "":
-        user = User.objects.create(
-            login=name,
-            password=password
-        )
-        user.save()
-        return HttpResponseRedirect("/?response=ok")
+def sign_up(request):
+    if request.method == 'GET':
+        login = request.GET.get("login", "")
+        password = request.GET.get("password", "")
+        if login != "" and password != "":
+            user = User.objects.create(
+                login=login,
+                password=password
+            )
+            user.save()
+    return HttpResponseRedirect("/")
+
+
+def sign_out(request):
+    if request.method == 'GET':
+        request.session.flush()
     return HttpResponseRedirect("/")
 
 
@@ -77,7 +98,7 @@ def attempts_left(name, max_attempts=3, max_waiting=300):
     attempts.sort(key=lambda att: att.dateTime)
     count = len(attempts)
     if count:
-        seconds = max_waiting - diff_time(attempts[count - 1].dateTime)
+        seconds = max_waiting - diff_time(attempts[0].dateTime)
     else:
         seconds = 0
     return max_attempts - count, seconds

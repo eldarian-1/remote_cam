@@ -7,6 +7,8 @@ WORKDIR /usr/src/app/
 
 COPY . /usr/src/app/
 RUN pip install --no-cache-dir -r requirements.txt
+RUN python ./server/manage.py makemigrations main
+RUN python ./server/manage.py migrate
 
 EXPOSE 8000
 

@@ -5,10 +5,12 @@
     <title>Интернет вещей</title>
     <script>
         window.onload = () => {
-            setInterval(() => {
-                let file = "/frame?" + new Date().getTime()
-                document.getElementById("frame").src = file
-            }, 500)
+            let frame = document.getElementById("frame");
+            if (frame) {
+                setInterval(() => {
+                    frame.src = "/frame?" + new Date().getTime()
+                }, 500)
+            }
         }
     </script>
 </head>
@@ -16,6 +18,31 @@
     <p>Работа студента группы РИС-19-1б
     <p>Эльдара Миннахметова
     <p>Python Django
-    <p><img id="frame" src="/frame" width=640 height=480 />
+
+    {% if login == '' %}
+
+        {% if attempts and attempt_name %}
+            <p>Осталось попыток для логина {{ attempt_name }}: {{ attempts }}</p>
+        {% elif attempt_name %}
+            <p>Секунд до следующей попытки для логина {{ attempt_name }}: {{ left }}</p>
+        {% endif %}
+
+        <form action="/sign_in" method="POST">
+            {% csrf_token %}
+            <table>
+                <tr><td>Логин </td><td><input type="text" name="login"></td></tr>
+                <tr><td>Пароль </td><td><input type="text" name="password"></td></tr>
+            </table>
+            <input type="submit" value="Авторизоваться">
+        </form>
+
+    {% else %}
+
+        <p>Добро пожаловать, {{ login }}</p>
+        <p><a href="/sign_out">Выйти</a></p>
+        <p><img id="frame" src="/frame" width=640 height=480 />
+
+    {% endif %}
+
 </body>
 </html>
