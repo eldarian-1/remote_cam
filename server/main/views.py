@@ -57,11 +57,13 @@ def sign_up(request):
         login = request.GET.get("login", "")
         password = request.GET.get("password", "")
         if login != "" and password != "":
-            user = User.objects.create(
-                login=login,
-                password=password
-            )
-            user.save()
+            if len(list(User.objects.filter(login=login))) == 0:
+                user = User.objects.create(
+                    login=login,
+                    password=password
+                )
+                user.save()
+                request.session['login'] = login
     return HttpResponseRedirect("/")
 
 
