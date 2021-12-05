@@ -1,5 +1,6 @@
 from cv2 import cv2
 from .models import *
+from urllib.parse import quote_plus
 from datetime import datetime, timezone
 
 
@@ -34,7 +35,7 @@ def attempts_left(name, max_attempts=3, max_waiting=300):
     return max_attempts - count, seconds
 
 
-def doesnt_user_exist(login, password=False):
+def does_user_exist(login, password=False):
     if password:
         users = list(User.objects.filter(
             login=login,
@@ -44,7 +45,11 @@ def doesnt_user_exist(login, password=False):
         users = list(User.objects.filter(
             login=login
         ))
-    return len(users) == 0
+    return len(users)
+
+
+def doesnt_user_exist(login, password=False):
+    return not does_user_exist(login, password)
 
 
 def create_attempt(login):
@@ -55,7 +60,12 @@ def create_attempt(login):
 
 
 def create_user(login, password):
-    User.objects.create(
-        login=login,
-        password=password
-    ).save()
+    if doesnt_user_exist(login):
+        User.objects.create(
+            login=login,
+            password=password
+        ).save()
+
+
+def attempt_link(login):
+    return "/?attempt_login=%s" % quote_plus(login)
