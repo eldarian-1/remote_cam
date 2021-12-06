@@ -1,3 +1,4 @@
+import hashlib
 from cv2 import cv2
 from .models import *
 from urllib.parse import quote_plus
@@ -39,7 +40,7 @@ def does_user_exist(login, password=False):
     if password:
         users = list(User.objects.filter(
             login=login,
-            password=password
+            password=get_hash(password)
         ))
     else:
         users = list(User.objects.filter(
@@ -63,9 +64,13 @@ def create_user(login, password):
     if doesnt_user_exist(login):
         User.objects.create(
             login=login,
-            password=password
+            password=get_hash(password)
         ).save()
 
 
 def attempt_link(login):
     return "/?attempt_login=%s" % quote_plus(login)
+
+
+def get_hash(string):
+    return hashlib.sha1(bytes(string, 'utf-8')).hexdigest()
