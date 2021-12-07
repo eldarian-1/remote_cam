@@ -35,3 +35,8 @@ class CameraTestCases(TestCase):
         self.assertEqual(attempt_link('login'), '/?attempt_login=login')
         self.assertEqual(attempt_link('login with spaces'), '/?attempt_login=login+with+spaces')
         self.assertEqual(attempt_link('?id=6'), '/?attempt_login=%3Fid%3D6')
+
+    def test_get_hash(self):
+        self.assertEqual(len(get_hash('12345678')), 40)
+        self.assertEqual(len(get_hash('а такой пароль как будет в хэше?')), 40)
+        self.assertEqual(len(get_hash('super password')), 40)
