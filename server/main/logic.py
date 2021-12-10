@@ -86,4 +86,4 @@ def get_client_ip(request):
 
 
 def is_valid_ip(ip):
-    return ip == '172.17.0.1'
+    return ip == '172.17.0.1' or ip == '127.0.0.1'

@@ -52,4 +52,5 @@ class CameraTestCases(TestCase):
 
     def test_is_valid_ip(self):
         self.assertTrue(is_valid_ip('172.17.0.1'))
-        self.assertFalse(is_valid_ip('172.17.0.2'))
+        self.assertTrue(is_valid_ip('127.0.0.1'))
+        self.assertFalse(is_valid_ip('192.168.1.57'))
