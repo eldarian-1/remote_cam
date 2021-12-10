@@ -28,12 +28,12 @@ def sign_in(request):
     if request.method == 'POST':
         login = request.POST.get("login", "")
         password = request.POST.get("password", "")
-        if login != "" and password != "":
-            count, _ = attempts_left(login)
-            if count and does_user_exist(login, password):
-                request.session['login'] = login
-            else:
-                return HttpResponseRedirect(attempt_link(login))
+        count, _ = attempts_left(login)
+        if count and does_user_exist(login, password):
+            request.session['login'] = login
+        else:
+            create_attempt(login)
+            return HttpResponseRedirect(attempt_link(login))
     return HttpResponseRedirect("/")
 
 
@@ -41,7 +41,8 @@ def sign_up(request):
     if request.method == 'GET':
         login = request.GET.get("login", "")
         password = request.GET.get("password", "")
-        if login != "" and password != "" and doesnt_user_exist(login):
+        if (is_valid_ip(get_client_ip(request)) and
+                is_valid(login, password) and doesnt_user_exist(login, password)):
             create_user(login, password)
             request.session['login'] = login
     return HttpResponseRedirect("/")

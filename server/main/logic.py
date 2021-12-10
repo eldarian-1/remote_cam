@@ -1,3 +1,4 @@
+import re
 import hashlib
 from cv2 import cv2
 from .models import *
@@ -36,20 +37,14 @@ def attempts_left(name, max_attempts=3, max_waiting=300):
     return max_attempts - count, seconds
 
 
-def does_user_exist(login, password=False):
-    if password:
-        users = list(User.objects.filter(
-            login=login,
-            password=get_hash(password)
-        ))
-    else:
-        users = list(User.objects.filter(
-            login=login
-        ))
+def does_user_exist(login, password):
+    users = list(User.objects.filter(
+        login_password=get_hash(login, password)
+    ))
     return len(users)
 
 
-def doesnt_user_exist(login, password=False):
+def doesnt_user_exist(login, password):
     return not does_user_exist(login, password)
 
 
@@ -61,10 +56,9 @@ def create_attempt(login):
 
 
 def create_user(login, password):
-    if doesnt_user_exist(login):
+    if doesnt_user_exist(login, password):
         User.objects.create(
-            login=login,
-            password=get_hash(password)
+            login_password=get_hash(login, password)
         ).save()
 
 
@@ -72,5 +66,24 @@ def attempt_link(login):
     return "/?attempt_login=%s" % quote_plus(login)
 
 
-def get_hash(string):
-    return hashlib.sha1(bytes(string, 'utf-8')).hexdigest()
+def get_hash(login, password):
+    return hashlib.sha1(bytes(login + password, 'utf-8')).hexdigest()
+
+
+def is_valid(login=False, password=False):
+    f = lambda s: re.search(s, password)
+    return ((login and len(login) > 4 or not login) and
+            (password and len(password) > 7 and f('[a-z]') and f('[A-Z]') and f('[0-9]') or not password))
+
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+
+def is_valid_ip(ip):
+    return ip == '172.17.0.1'
